@@ -12,10 +12,9 @@
 
 ## Bản thực hiện — Nguyễn Hữu Thành (2A202602807)
 
-Bài đã chạy xong cả 4 bước. Hai prompt dùng chung định nghĩa trong
-`src/prompt_templates.py`. Bước RAGAS chấm đủ 50 câu mỗi phiên bản và cả hai
-đều đạt faithfulness ≥ 0.8. Kết quả và phần so sánh nằm trong
-[evidence/README.md](evidence/README.md).
+Các TODO đã được triển khai. Hai prompt mang tên riêng và dùng chung định nghĩa
+trong `src/prompt_templates.py` để bước A/B và RAGAS không lệch nội dung.
+`run_all.py` tự ghi log UTF-8 vào `evidence/`; bước 3 tự sao chép báo cáo JSON.
 
 Chạy bằng môi trường riêng trên Windows PowerShell:
 
@@ -28,7 +27,8 @@ $env:PYTHONUTF8 = "1"
 .venv\Scripts\python.exe -m unittest discover -s tests -v
 ```
 
-Thư mục `evidence/` có đủ 7 bằng chứng theo `SUBMISSION.md`.
+Các ảnh dashboard phải được chụp từ phiên chạy thật theo `SUBMISSION.md`.
+Trạng thái bằng chứng và hướng dẫn còn lại được ghi trong `evidence/README.md`.
 
 ## Tổng quan
 
