@@ -10,6 +10,26 @@
 
 # Chào mừng các bạn đến với Day 22: LangSmith + Prompt Versioning
 
+## Bản thực hiện — Nguyễn Hữu Thành (2A202602807)
+
+Các TODO đã được triển khai. Hai prompt mang tên riêng và dùng chung định nghĩa
+trong `src/prompt_templates.py` để bước A/B và RAGAS không lệch nội dung.
+`run_all.py` tự ghi log UTF-8 vào `evidence/`; bước 3 tự sao chép báo cáo JSON.
+
+Chạy bằng môi trường riêng trên Windows PowerShell:
+
+```powershell
+$env:PYTHONUTF8 = "1"
+.venv\Scripts\python.exe src\run_all.py
+# Chỉ chạy Guardrails:
+.venv\Scripts\python.exe src\run_all.py --step 4
+# Kiểm tra offline (không gửi traces hoặc gọi LLM):
+.venv\Scripts\python.exe -m unittest discover -s tests -v
+```
+
+Các ảnh dashboard phải được chụp từ phiên chạy thật theo `SUBMISSION.md`.
+Trạng thái bằng chứng và hướng dẫn còn lại được ghi trong `evidence/README.md`.
+
 ## Tổng quan
 
 Trong lab này, bạn sẽ xây dựng một hệ thống hỏi đáp hoàn chỉnh tích hợp nhiều công nghệ AI hiện đại:

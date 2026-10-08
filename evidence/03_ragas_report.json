@@ -1,0 +1,24 @@
+{
+  "sample_count_per_version": 50,
+  "provider": "gemini",
+  "generation_model": "gemini-3.5-flash-lite",
+  "evaluator": {
+    "provider": "gemini",
+    "gemini_model": "gemma-4-26b-a4b-it",
+    "reasoning_effort": "minimal",
+    "separate_candidate_requests": true
+  },
+  "prompt_v1_scores": {
+    "faithfulness": 1.0,
+    "answer_relevancy": 0.839398017410214,
+    "context_recall": 1.0,
+    "context_precision": 0.9599999999243333
+  },
+  "prompt_v2_scores": {
+    "faithfulness": 0.9884999999999999,
+    "answer_relevancy": 0.808154045538056,
+    "context_recall": 1.0,
+    "context_precision": 0.9599999999243333
+  },
+  "target_met": true
+}

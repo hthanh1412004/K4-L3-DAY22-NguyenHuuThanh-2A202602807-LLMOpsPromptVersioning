@@ -21,6 +21,7 @@ os.environ["LANGCHAIN_ENDPOINT"]   = os.getenv("LANGCHAIN_ENDPOINT", "https://ap
 # ── Provider mặc định ─────────────────────────────────────────────────────
 # Đổi giá trị PROVIDER trong .env: openai | gemini | anthropic | ollama | openrouter
 PROVIDER = os.getenv("PROVIDER", "openai").lower()
+EVAL_PROVIDER = os.getenv("EVAL_PROVIDER", PROVIDER).lower()
 
 # ── OpenAI ────────────────────────────────────────────────────────────────
 OPENAI_API_KEY         = os.getenv("OPENAI_API_KEY", "")
@@ -31,7 +32,8 @@ OPENAI_EMBEDDING_MODEL = os.getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-3-s
 # ── Google Gemini ─────────────────────────────────────────────────────────
 GOOGLE_API_KEY          = os.getenv("GOOGLE_API_KEY", "")
 GEMINI_MODEL            = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
-GEMINI_EMBEDDING_MODEL  = os.getenv("GEMINI_EMBEDDING_MODEL", "models/embedding-001")
+GEMINI_EVAL_MODEL       = os.getenv("GEMINI_EVAL_MODEL", "") or GEMINI_MODEL
+GEMINI_EMBEDDING_MODEL  = os.getenv("GEMINI_EMBEDDING_MODEL", "models/gemini-embedding-001")
 
 # ── Anthropic ─────────────────────────────────────────────────────────────
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
@@ -58,18 +60,36 @@ def validate() -> bool:
     Trả về True nếu hợp lệ, False nếu thiếu.
     """
     missing = []
+    def configured(value):
+        return bool(value.strip()) and not value.strip().startswith("your_")
+    supported = {"openai", "gemini", "anthropic", "ollama", "openrouter"}
+    if EVAL_PROVIDER not in supported:
+        missing.append("EVAL_PROVIDER hợp lệ (openai/gemini/anthropic/ollama/openrouter)")
+    evaluator_keys = {"openai": OPENAI_API_KEY, "gemini": GOOGLE_API_KEY,
+                      "anthropic": ANTHROPIC_API_KEY, "openrouter": OPENROUTER_API_KEY}
+    if EVAL_PROVIDER in evaluator_keys:
+        key = evaluator_keys[EVAL_PROVIDER]
+        if not configured(key):
+            missing.append(f"API key cho evaluator {EVAL_PROVIDER}")
 
-    if not LANGSMITH_API_KEY:
+    if PROVIDER not in {"openai", "gemini", "anthropic", "ollama", "openrouter"}:
+        missing.append("PROVIDER hợp lệ (openai/gemini/anthropic/ollama/openrouter)")
+    if os.environ["LANGCHAIN_TRACING_V2"].lower() != "true":
+        missing.append("LANGCHAIN_TRACING_V2=true")
+
+    if not configured(LANGSMITH_API_KEY):
         missing.append("LANGCHAIN_API_KEY (LangSmith)")
 
-    if PROVIDER == "openai" and not OPENAI_API_KEY:
+    if PROVIDER == "openai" and not configured(OPENAI_API_KEY):
         missing.append("OPENAI_API_KEY")
-    elif PROVIDER == "gemini" and not GOOGLE_API_KEY:
+    elif PROVIDER == "gemini" and not configured(GOOGLE_API_KEY):
         missing.append("GOOGLE_API_KEY")
-    elif PROVIDER == "anthropic" and not ANTHROPIC_API_KEY:
+    elif PROVIDER == "anthropic" and not configured(ANTHROPIC_API_KEY):
         missing.append("ANTHROPIC_API_KEY")
-    elif PROVIDER == "openrouter" and not OPENROUTER_API_KEY:
+    elif PROVIDER == "openrouter" and not configured(OPENROUTER_API_KEY):
         missing.append("OPENROUTER_API_KEY")
+    if PROVIDER in {"anthropic", "openrouter"} and not configured(OPENAI_API_KEY):
+        missing.append("OPENAI_API_KEY (embeddings)")
     # Ollama: không cần API key
 
     if missing:
@@ -84,4 +104,4 @@ def validate() -> bool:
 
 
 if __name__ == "__main__":
-    validate()
+    raise SystemExit(0 if validate() else 1)

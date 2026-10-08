@@ -16,7 +16,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 import config
 
 
-def get_llm(provider: str = None, temperature: float = 0.0):
+def get_llm(provider: str = None, temperature: float = 0.0, model: str = None):
     """
     Trả về BaseChatModel tương ứng với provider được chọn.
 
@@ -24,6 +24,7 @@ def get_llm(provider: str = None, temperature: float = 0.0):
         provider    : "openai" | "gemini" | "anthropic" | "ollama" | "openrouter"
                       Mặc định: đọc PROVIDER từ .env (config.PROVIDER)
         temperature : độ ngẫu nhiên (0.0 = tất định, 1.0 = sáng tạo)
+        model       : tùy chọn model khác cho evaluator; mặc định dùng config.
 
     Returns:
         BaseChatModel instance sẵn sàng sử dụng
@@ -37,7 +38,7 @@ def get_llm(provider: str = None, temperature: float = 0.0):
     if provider == "openai":
         from langchain_openai import ChatOpenAI
         kwargs = {
-            "model": config.OPENAI_MODEL,
+            "model": model or config.OPENAI_MODEL,
             "api_key": config.OPENAI_API_KEY,
             "temperature": temperature,
         }
@@ -48,7 +49,7 @@ def get_llm(provider: str = None, temperature: float = 0.0):
     elif provider == "gemini":
         from langchain_google_genai import ChatGoogleGenerativeAI
         return ChatGoogleGenerativeAI(
-            model=config.GEMINI_MODEL,
+            model=model or config.GEMINI_MODEL,
             google_api_key=config.GOOGLE_API_KEY,
             temperature=temperature,
         )
@@ -56,7 +57,7 @@ def get_llm(provider: str = None, temperature: float = 0.0):
     elif provider == "anthropic":
         from langchain_anthropic import ChatAnthropic
         return ChatAnthropic(
-            model=config.ANTHROPIC_MODEL,
+            model=model or config.ANTHROPIC_MODEL,
             api_key=config.ANTHROPIC_API_KEY,
             temperature=temperature,
         )
@@ -64,7 +65,7 @@ def get_llm(provider: str = None, temperature: float = 0.0):
     elif provider == "ollama":
         from langchain_ollama import ChatOllama
         return ChatOllama(
-            model=config.OLLAMA_MODEL,
+            model=model or config.OLLAMA_MODEL,
             base_url=config.OLLAMA_BASE_URL,
             temperature=temperature,
         )
@@ -73,7 +74,7 @@ def get_llm(provider: str = None, temperature: float = 0.0):
         # OpenRouter dùng OpenAI-compatible API
         from langchain_openai import ChatOpenAI
         return ChatOpenAI(
-            model=config.OPENROUTER_MODEL,
+            model=model or config.OPENROUTER_MODEL,
             api_key=config.OPENROUTER_API_KEY,
             base_url=config.OPENROUTER_BASE_URL,
             temperature=temperature,
@@ -117,10 +118,12 @@ def get_embeddings(provider: str = None):
 
     elif provider == "gemini":
         from langchain_google_genai import GoogleGenerativeAIEmbeddings
-        return GoogleGenerativeAIEmbeddings(
+        from utils.cached_embeddings import CachedEmbeddings
+        delegate = GoogleGenerativeAIEmbeddings(
             model=config.GEMINI_EMBEDDING_MODEL,
             google_api_key=config.GOOGLE_API_KEY,
         )
+        return CachedEmbeddings(delegate, config.GEMINI_EMBEDDING_MODEL)
 
     elif provider == "anthropic":
         # Anthropic không cung cấp Embeddings API → dùng OpenAI thay thế
